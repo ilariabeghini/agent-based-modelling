@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "icsspy"
+packages = [{ include = "icsspy" }]
+version = "0.1.0"
+description = ""
+authors = ["John McLevey <john.mclevey@uwaterloo.ca>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<4.0"
+ipykernel = "^6.29.5"
+numpy = "^2.1.1"
+seaborn = "^0.13.2"
+scikit-learn = "^1.5.1"
+pyprojroot = "^0.3.0"
+mesa = "^2.3.3"
+networkx = "^3.3"
+
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
