@@ -210,79 +210,19 @@ plt.savefig('output/compare_agent_networks.png', dpi=300)
 
 ## Model Analysis
 
-Model analysis is critical for understanding the behavior of an ABM and ensuring that it accurately reflects the real-world system being modeled. In this section, we'll cover various analysis techniques, including descriptive, exploratory, comparative, and predictive analyses.
+So far we have not been very systematic in how we've approaches analyzing the outputs of our SIR model. What's involved in more systematic analyses?
+
+The primary goal of analyzing an agent-based model is to gain insights into how the model behaves and how well it represents the real-world system it's designed to simulate. This involves understanding the dynamics of the model, validating it against empirical data, and exploring the implications of different parameter settings.
+
+When iteratively analyzing models, we can use Sensitivity Analysis, Parameter Sweeps, and Computational Experiments to understand, test, and analyze the behavior of the model under various conditions. These methods are essential for ensuring the model's reliability and for interpreting its results. 
+
+## Sensitivity Analysis: Peak Proportion Infected
 
 Sensitivity Analysis: Peak Proportion Infected
 Sensitivity analysis helps determine how changes in model parameters affect the outcomes. Here, we'll focus on the peak proportion of infected agents as our outcome of interest.
 
 First, let's set up a parameter sweep for the sensitivity analysis.
 
-<!--
-
-- Understand and interpret model behavior to better understand the system being modeled
-- Validate the model against real-world data, check robustness and reliability
-- Explore the effects of different parameters and conditions and identify key drivers of model outcomes
-
-- Track agent states, interactions, and other metrics
-- Visualize model dynamics over time
-- Use statistical or other approaches
-
-So far we have not been very systematic in how we've approaches analyzing the outputs of our SIR model. What's involved in more systematic analyses?
-
-The primary goal of analyzing an agent-based model is to gain insights into how the model behaves and how well it represents the real-world system it's designed to simulate. This involves understanding the dynamics of the model, validating it against empirical data, and exploring the implications of different parameter settings.
-
-We can break ABM model analysis down into several types. Descriptive analysis helps summarize what's happening in the model, while exploratory analysis digs deeper into patterns and relationships within the data. Comparative analysis is useful when we want to understand how different scenarios or versions of the model compare, and predictive analysis leverages the model to forecast future outcomes.
-
-Usually, we use several techniques at once to analyze ABMs effectively. Data collection is crucial for tracking the various states and interactions within the model, often using tools like Mesa's DataCollector. Visualization helps us see the trends and dynamics within the model, and statistical analysis allows us to quantify and interpret the data meaningfully.
-
-Ultimately, the goal of analyzing an ABM is to ensure that the model is providing accurate, reliable insights into the system being studied. This includes identifying the key factors that drive model outcomes and ensuring that the model can withstand scrutiny through robust analysis.
-
-This high-level overview sets the stage for more detailed discussions on specific analysis methods like sensitivity analysis, parameter sweeps, and computational experiments, which are essential for thoroughly understanding and validating our ABMs.
-
-- Sensitivity Analysis helps determine which model parameters are most important and/or uncertain, and which require careful estimation and interpretation.
-- Parameter Sweeps allow for a systematic exploration of how different settings influence model behavior, which helps in understanding the model's response landscape.
-- Computational Experiments involve systematically investigating the model's behavior to answer specific questions, understand mechanisms, or test hypotheses.
-
-When iteratively analyzing models, we can use Sensitivity Analysis, Parameter Sweeps, and Computational Experiments to understand, test, and analyze the behavior of the model under various conditions. These methods are essential for ensuring the model's reliability and for interpreting its results. Here's what they mean:
-
-### Sensitivity Analysis
-
-Sensitivity analysis involves systematically varying model parameters to assess how changes in these parameters affect the model's output. It helps identify which parameters are most influential in determining model behavior and which ones have less impact.
-
-The main goal is to understand how robust the model's results are. If small changes in a parameter lead to significant changes in outcomes, for example, that parameter is considered sensitive and could indicate areas where the model might need refinement or better data.
-
-Local Sensitivity Analysis involves small variations in one parameter at a time to observe the local impact on the model, whereas Global Sensitivity Analysis considers a broader range of variations and the combined effects of multiple parameters.
-
-### Parameter Sweeps
-
-This allows us to map out the response of the model across the entire space of possible parameter values, which helps identify trends, tipping points, or regions of parameter space where the model behaves in a particular way. Typically, this is done by running a series of simulations where one or more parameters are adjusted incrementally. The results are then analyzed to understand the relationship between parameters and outcomes.
-
-### Computational Experiments:
-
-In the context of ABM, computational experiments refer to the process of systematically testing the model by varying initial conditions, parameter values, or model structures to observe the resulting behavior. Most importantly, this is done with the goal of answering scientific questions, understanding mechanisms, or testing hypotheses. Sometimes this is explicitly causal and may be similar to laboratory experiments, only in a simulated environment where variables can easily be manipulated and controlled. Other times it is more exploratory, with the goal of mapping out the model's behavior across a wide range of conditions.
-
-## Sensitivity Analysis: Peak Proportion Infected
-
-Let's do a sensitivity analysis! We'll follow these steps:
-
-1. Set up the **parameter sweep** dictionary
-2. Run the model according to the sweep dictionary<br>[+ plot results from batch run]{.nord-light}
-3. Aggregate the model results
-4. Plot the results
-5. Correlate parameters with peak proportion infected^[This is an additional step, not necessarily part of a sensitivity analysis but often done alongside.]
-6. Interpret, critique... *repeat*
-7. Prepare the data
-8. Plot the results
-9. Interpret, critique... *repeat*
-
-First, we'll focus on peak proportion infected as the outcome of interest.
-
-Sensitivity plots will show how the peak number of infections varies with changes in each parameter. Parameters with more spread (higher variability in the boxplots) are more sensitive.
-
-The correlation analysis will help identify which parameters have the most substantial impact on the peak number of infections.
-
-Let's set up our parameter sweep dict for the sensitivity analysis. In the fict, values that are single elements represent fixed parameters (the dimensions of the grid, etc.) and lists `[]` represent groups of parameters to iterate over. The model's response space is made up of every combination of these fixed and global parameters.
--->
 
 ```{python}
 params = {
@@ -447,21 +387,11 @@ plot_line_comparison(
 )
 ```
 
-![Correlations between model parameters and peak infection proportion.](images/sir_correlations_params_peak_infection.png){width="100%" #fig-sir_correlations_params_peak_infection}
-
-
 
 ## Sensitivity Analysis: Time to Peak Proportion Infected
 
 Next, let's analyze how different parameters affect the time it takes for the infection to reach its peak.
-<!--
-We have to do a bit more data prep.
 
-- Group the data by `RunId` and find the step with the maximum number of infections for each run
-- Extract the relevant columns: `RunId`, `Step` (time to peak), and `Infected` (peak infections)
-- Merge with the original parameter data
-
-After this, `time_to_peak_merged` will contain the data on time to peak infection along with the parameters used in each run. -->
 
 ```{python}
 time_to_peak = results_df.loc[results_df.groupby("RunId")["Infected"].idxmax()]
@@ -505,55 +435,11 @@ plt.tight_layout()
 plt.savefig("images/sir_time_to_peak_analysis.png", dpi=300)
 ```
 
-![Sensitivity plot for our SIR model parameters and time to peak proportion infected across all model runs.](images/sir_time_to_peak_analysis.png){width="50%" #fig-sir_time_to_peak_analysis}
-
 There is much more we could do here, but let's move on to a different example.
 
 # Social Learning, Influence, and Opinion Dynamics
 
-Opinion dynamics models explore how individual opinions form, cluster, and change over time, and how these dynamics lead to group-level outcomes such as consensus, polarization, or fragmentation. These models are crucial for understanding social phenomena like political polarization, consensus formation, and the spread of misinformation.
-
-The Bounded Confidence Model (BCM)
-The Bounded Confidence Model (BCM) simulates opinion evolution in a continuous opinion space. Agents interact and influence each other only if their opinions are within a certain confidence bound ($\epsilon$).
-
-ODD Protocol for Bounded Confidence Model
-Below is a simplified ODD (Overview, Design concepts, Details) protocol for the Bounded Confidence Model.
-
-<!--
-Some key questions in opinion dynamics: How do opinions form, cluster, and change in populations? How do populations reach opinion consensus, polarization, or fragmentation? What are the key drivers of formation, clustering, change, as well as population-level consensus, polarization, or fragmentation? What are the roles played by: the structure and dynamics of multi-layer social networks; disinformation and propaganda; echo chambers and filter bubbles; agent cognition, emotion, and identity, etc.? How do we best model diversity and heterogenous populations?
-
-BCMs simulate opinion evolution in a continuous opinion space. People interact and influence each other if their opinions are within a certain threshold ($\epsilon$).
-
-- Agents have continuous opinions (e.g., -1 to 1).
-- A Confidence Bound ($\epsilon$) determines the range within which agents are influenced by others.
-- In interactions, agents adjust opinions if the difference between their opinion and their alter's opinion is within their confidence bound.
-- The outcome is typically opinion clusters indicating polarization, fragmentation, or consensus.
-
-Opinion dynamics research is a key area in computational social science, focusing on how individuals' opinions are shaped and how these opinions influence group decisions.
-
-This research is especially relevant to understanding phenomena like political polarization, consensus formation in teams, and the spread of misinformation.
-
-In this part of the lecture, we'll explore one of the foundational models in opinion dynamics: the Bounded Confidence Model (BCM), which offers a way to understand how opinions evolve when individuals are influenced only by those with similar views.
-
-The Bounded Confidence Model was introduced as a way to simulate how people influence each other's opinions when they only engage with those who hold similar views.
-
-This model is particularly powerful for studying polarization, where society splits into groups with opposing opinions, and for understanding the conditions under which consensus can be reached.
-
-Let's break down the components of a Bounded Confidence Model:
-
-Agents: Each agent represents an individual with an opinion, typically modeled as a number between -1 and 1.
-
-Confidence Bound ($\epsilon$): This is a critical parameter. It represents how open an agent is to interacting with others. If another agent's opinion is within this bound, they will influence each other.
-
-Interaction: When two agents interact, they adjust their opinions towards each other. This models the idea of social influence, where people often adjust their views based on those they interact with.
-
-Outcome: Depending on the value of $\epsilon$ and the initial distribution of opinions, the model can result in different outcomes: the formation of distinct opinion clusters, complete polarization, or consensus. -->
-
-### ODD Protocol for Bounded Confidence Model
-
-- import or link here; readme in the package, maybe?
-
-![Figure reproduced from @railsback2019agent.](images/odd.png){width="100%" .shadow-img}
+- ODD Protocol for Bounded Confidence Model
 
 ## Bounded Confidence Models
 
@@ -578,16 +464,8 @@ icsspy.set_style()
 from icsspy.abms.bounded_confidence import BoundedConfidenceModel
 ```
 
+
 ```{python}
-#| echo: false
-with open('_variables.yml', 'r') as file:
-    params = yaml.safe_load(file)
-
-model_params = params.get('bounded_confidence_model_1')
-pprint(model_params)
-```
-
-```python
 model_params = {'N': 100,
  'epsilon': 0.5,
  'grid_height': 40,
@@ -638,7 +516,7 @@ plt.grid(True)
 plt.savefig('output/bounded-confidence-opinion-distribution-evolution.png', dpi=300)
 ```
 
-![A collection of KDE plots showing the evolution of the opinion distribution at each time step in the model.](output/bounded-confidence-opinion-distribution-evolution.png){width="75%" #fig-bcmevo}
+A collection of KDE plots showing the evolution of the opinion distribution at each time step in the model.
 
 
 ### Plot Opinions Over Time
@@ -662,14 +540,13 @@ plt.ylim(-1.01, 1)
 plt.savefig('output/bounded_confidence_epsilon_one_run.png', dpi=300)
 ```
 
-![Three opinion clusters forming over time in a single run of a BCM with $\epsilon$ = 5. Note the center and two extremes.](output/bounded_confidence_epsilon_one_run.png){width="75%" #fig-bounded_confidence_epsilon_one_run}
+Three opinion clusters forming over time in a single run of a BCM with $\epsilon$ = 5. Note the center and two extremes.
 
 
 ### Experimenting with $\epsilon$
 
 Finally, let's run the simulation with different $\epsilon$ values and compare the results.
 
-<!-- Lets run the simulation with different $\epsilon$ values (e.g., -1 to 1 in steps) and collect the results in a DataFrame. The DataFrame will include an additional column to track the $\epsilon$ used in each run. -->
 
 ```{python}
 def run_simulation_with_different_epsilons(model_params, epsilon_values):
@@ -761,7 +638,7 @@ fig.text(
 plt.savefig('output/epsilon_comparison_one_run.png', dpi=300)
 ```
 
-![Results of a parameter sweep on $\epsilon$. Note tendencies towards fragmentation, polarization, and consensus at different $\epsilon$ values.](output/epsilon_comparison_one_run.png){width="100%" #fig-epsilon_comparison_one_run}
+Results of a parameter sweep on $\epsilon$. Note tendencies towards fragmentation, polarization, and consensus at different $\epsilon$ values.
 
 # Conclusion
 
