@@ -61,6 +61,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 import icsspy
+random.seed(30)
 icsspy.set_style()
 from icsspy.networks import plot_line_comparison
 ```
@@ -75,20 +76,21 @@ We'll begin by exploring a classic Susceptible-Infected-Recovered (SIR) model. T
 First, let's load the SIRModel class from the course package and define the parameters for our first model, which simulates a disease with a high infection rate.
 
 ```{python}
-from icsspy.abms.sir import SIRModel
+from icsspy.abms.sir import SIRModel ## if you opena "icsspy.abms.sir" you see the code in the video (alsi SIRAgent)
 
-model_1_params = {'N': 100,
+model_1_params = {'N': 100, #100 people in this simulated society
  'grid_height': 40,
  'grid_width': 40,
  'infection_rate': 0.3,
- 'max_agent_step_size': 1,
+ 'max_agent_step_size': 1, #the agent can move one cell at a time
  'n_initial_infections': 2,
- 'n_iterations': 150,
+ 'n_iterations': 150, 
  'recovery_time_range': [14, 24]
 }
 
 print("Model 1 Params\n", model_1_params)
 ```
+[Importing SIRmodel whose file is in abms, It is common to separate out the code that set up a model from the code you use to fit and run the model.]
 
 Here, we have a population of 100 agents on a 40x40 grid. The infection rate is set to 0.3, meaning there's a 30% chance that a susceptible agent will become infected when in contact with an infected agent. The agents can move to adjacent cells, and their recovery time is randomly chosen between 14 and 24 time steps.
 
@@ -111,6 +113,7 @@ for i in range(model_1_params['n_iterations']):
 m1res = model_1.datacollector.get_model_vars_dataframe()
 m1res
 ```
+[At each model step every agent takes a step. We want to plot averything we want at every agent step. Use datacollector to pur together information at every time. We have collected info about the distribution of infected people]
 
 ### Model 2: SIR Model with Low Transmissibility
 
@@ -127,6 +130,7 @@ model_2_params = {'N': 100,
 
 print("\nModel 2 Params\n", model_2_params)
 ```
+[model_2 has been stored, so we load it.]
 
 We have kept most of the parameters the same as in Model 1, except for the infection rate, which is now 0.15, to simulate a less contagious disease.
 
@@ -163,10 +167,13 @@ plt.ylabel("Proportion Infected\n")
 plt.legend(loc='upper right', fontsize=10)
 plt.savefig('output/sir_compare_models_1-2.png')
 ```
+[Compare the two modules: difference in the transmissibility of the virus. There a lot of uncertainty]
 
 ### Analyzing Agent Interactions
 
 In addition to tracking the number of infected agents, it's also useful to analyze how agents interact with each other during the simulation.
+
+[We pull info out of the model and we can use to construct interaction networks.]
 
 ```{python}
 interaction_graphs = {}
@@ -179,13 +186,14 @@ for i, model in enumerate(models, start=1):
         for k, v in agent.interactions.items():
             wel.append((int(agent.unique_id), k, v))
 
-    G = nx.Graph()
+    G = nx.Graph() # nx. is a package NetworkX
     G.add_weighted_edges_from(wel)
     interaction_graphs[f'M{i}'] = G
 
     avg_degree = round(sum(dict(G.degree()).values()) / float(G.number_of_nodes()), 2)
     interaction_graph_summaries[f'M{i}'] = (G.number_of_nodes(), G.number_of_edges(), avg_degree)
 ```
+[we initialize the dictionary; takes the 2 models, and iterate over the 2 modules between agents and graphs.]
 
 ```{python}
 interaction_graph_summaries = pd.DataFrame(interaction_graph_summaries).T
@@ -206,6 +214,7 @@ plt.title('ECDF of Interaction Weights')
 plt.grid(True)
 plt.savefig('output/compare_agent_networks.png', dpi=300)
 ```
+[this models differ for the transmissibility of the infection]
 
 
 ## Model Analysis
@@ -216,6 +225,8 @@ The primary goal of analyzing an agent-based model is to gain insights into how 
 
 When iteratively analyzing models, we can use Sensitivity Analysis, Parameter Sweeps, and Computational Experiments to understand, test, and analyze the behavior of the model under various conditions. These methods are essential for ensuring the model's reliability and for interpreting its results. 
 
+[Insights about how the models works/is. And which are the implications of the model. We need to validate this model against the real-world data (robustness-checks)]
+
 ## Sensitivity Analysis: Peak Proportion Infected
 
 Sensitivity Analysis: Peak Proportion Infected
@@ -223,18 +234,18 @@ Sensitivity analysis helps determine how changes in model parameters affect the 
 
 First, let's set up a parameter sweep for the sensitivity analysis.
 
-
 ```{python}
 params = {
-    "N": 100,
-    "grid_height": 40,
-    "grid_width": 40,
-    "infection_rate": [0.2, 0.4, 0.6, 0.8,],
-    "recovery_time_range": [(7,14), (14,24)],
+    "N": 100,            # number of agents
+    "grid_height": 40,   # individual variables
+    "grid_width": 40,    # individual variables
+    "infection_rate": [0.2, 0.4, 0.6, 0.8,],   # how this value is associated with the outcome variables (the same for also the next three)
+    "recovery_time_range": [(7,14), (14,24)], # infected for min 7 days
     "max_agent_step_size": [2, 4, 6, 8, 10, 12],
     "n_initial_infections": [1, 5, 10, 15, 20, 25]
 }
 ```
+[Ww start by setting our dictionary. What is the sample space that results from the combination of parameters? Agent-past model have not posterior probability distribution. We can figure a model response rate. When we have variables that have lists like these, we tell the model we want a sample space that includes every single combination of the lists.]
 
 Then we can run multiple mpdels for every combination of parameters using the batch_run() function.
 
@@ -242,9 +253,9 @@ Then we can run multiple mpdels for every combination of parameters using the ba
 results = mesa.batch_run(
     model_cls=SIRModel,
     parameters=params,
-    iterations=10,
+    iterations=10,  # ten simulations
     max_steps=100,
-    number_processes=1,
+    number_processes=1, # change n° of processes (increase if powerful machine)
     data_collection_period=1,  # collect data at every step
     display_progress=True,
 )
@@ -252,10 +263,15 @@ results = mesa.batch_run(
 results_df = pd.DataFrame(results)
 results_df.info()
 ```
+[we want to run this model many times: 10 times, and every time is made of 100 steps.]
 
 ```{python}
 results_df.head()
 ```
+
+#```{python}
+#results_df.tail()
+#```
 
 Let's create a small multiples plot to compare some high-level patterns across different parameter settings.
 
@@ -267,7 +283,7 @@ melted_df = pd.melt(
     value_vars=['Susceptible', 'Infected', 'Recovered'],
     var_name='State',
     value_name='Proportion'
-)
+) # these variable are state, not aggregated
 
 # create the FacetGrid
 g = sns.FacetGrid(
@@ -276,7 +292,7 @@ g = sns.FacetGrid(
 )
 
 # map the scatterplot for individual observations
-g.map_dataframe(
+g.map_dataframe(   # we map the scatterplot
     sns.scatterplot, x='Step', y='Proportion', alpha=0.005, edgecolor=None
 )
 
@@ -291,6 +307,7 @@ g.set_titles("Initial Infections: {col_name}")
 
 plt.savefig("images/sir_subplots.png", dpi=300)
 ```
+[load the data from the results dataframe. we have a dataframe that is compatible with seaborn. A plot with 3 columns: we compare the state of the agents. We are dealing with an enourmous amount of data.]
 
 
 ![Batch results for Model 2 with mean trends emphasized.](images/sir_subplots.png)
@@ -310,6 +327,7 @@ Let's plot the sensitivity analysis results. We'll need to convert the `recovery
 ```{python}
 aggregated_results['recovery_time_range_str'] = aggregated_results['recovery_time_range'].apply(lambda x: f"{x[0]}-{x[1]}")
 ```
+[apply because it is required by seaborn (?)]
 
 And then we can set up the plot.
 
@@ -343,6 +361,7 @@ axes[1, 1].set_ylabel("Peak Infected\n")
 plt.tight_layout()
 plt.savefig("images/sir_sensitivity_analysis.png", dpi=300)
 ```
+[4 plots of the distribution of the number/proportion of the population that is infected.]
 
 ![Sensitivity plot for our SIR model parameters and peak proportion infected across all model runs.](images/sir_sensitivity_analysis.png)
 
@@ -353,6 +372,7 @@ As an additional step, we can correlate our parameters with the peak proportion 
 ```{python}
 aggregated_results["recovery_time_range_numeric"] = aggregated_results["recovery_time_range"].apply(lambda x: sum(x) / len(x))
 ```
+[here we build the mean]
 
 Once we've done that, we'll drop the original tuple (`recovery_time_range`) and it's string representation (`recovery_time_range_str`). I'll create a new dataframe for these modifications, since we'll use the dropped variables in our second sensitivity analysis.
 
@@ -388,6 +408,7 @@ plot_line_comparison(
 ```
 
 
+
 ## Sensitivity Analysis: Time to Peak Proportion Infected
 
 Next, let's analyze how different parameters affect the time it takes for the infection to reach its peak.
@@ -401,6 +422,7 @@ time_to_peak = time_to_peak[["RunId", "Step", "Infected"]].rename(
 
 time_to_peak_merged = pd.merge(time_to_peak, aggregated_results, on="RunId")
 ```
+[data preparation for doing another sensitivity analysis]
 
 Let's visualize how the time to peak infection varies with different parameters.
 
@@ -443,6 +465,8 @@ There is much more we could do here, but let's move on to a different example.
 
 ## Bounded Confidence Models
 
+[Each agent has a state, continuous opinions that exchanges with others. Large  epsilon, large confidence bound which depends on the opinions of agents.]
+
 ```{python}
 from mesa import Agent
 from mesa import Model
@@ -456,7 +480,10 @@ import numpy as np
 from pprint import pprint
 import yaml
 
+import random 
+
 import icsspy
+random.seed(30)
 icsspy.set_style()
 ```
 
@@ -467,7 +494,7 @@ from icsspy.abms.bounded_confidence import BoundedConfidenceModel
 
 ```{python}
 model_params = {'N': 100,
- 'epsilon': 0.5,
+ 'epsilon': 0.5, #agents have the same range
  'grid_height': 40,
  'grid_width': 40,
  'max_agent_step_size': 1,
